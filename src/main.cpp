@@ -203,13 +203,6 @@ void setup() {
   Serial.println("HTTP server started");
 }
 
-void flashLED() {
-  Serial.println("Flashing LED");
-  digitalWrite(LED_BUILTIN, HIGH);
-  delay(500);
-  digitalWrite(LED_BUILTIN, LOW);
-}
-
 int i = 0;
 void loop() {
 
@@ -221,6 +214,8 @@ void loop() {
   if (millis() - lastCaptureTime > captureInterval) {
     captureImage();
     lastCaptureTime = millis();
-    flashLED();
+    Serial.print(i);
+    Serial.println(" images taken");
+    i++;
   }
 }
