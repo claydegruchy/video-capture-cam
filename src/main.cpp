@@ -1,8 +1,8 @@
 #include "esp_camera.h"
+#include "secrets.h"
 #include <Arduino.h>
 #include <WebServer.h>
 #include <WiFi.h>
-#include "secrets.h"
 
 #define CAMERA_MODEL_XIAO_ESP32S3 // Has PSRAM
 
@@ -111,10 +111,20 @@ static camera_config_t camera_config = {
 // const char *ssid = WIFI_SSID
 // const char *password = WIFI_PASSWORD
 
-const int captureInterval = 5000; // Capture an image every 5 seconds
+const int captureInterval = 2000; // Capture an image every 5 seconds
 unsigned long lastCaptureTime = 0;
 
 WebServer server(80);
+// Set your Static IP address
+// IPAddress local_IP(192, 168, 1, 25);
+
+//
+// ESP32 static IP
+IPAddress staticIP(192, 168, 1, 25);
+// IP Address of your network gateway (router)
+IPAddress gateway(192, 168, 1, 1);
+// Subnet mask
+IPAddress subnet(255, 255, 255, 0);
 
 void handleRequest() {
   // Serve the captured image
@@ -166,6 +176,19 @@ void setup() {
     Serial.print(".");
   }
 
+  Serial.println("Connected..!");
+
+  Serial.print("Current ESP32 IP: ");
+  Serial.println(WiFi.localIP());
+  Serial.print("Gateway (router) IP: ");
+  Serial.println(WiFi.gatewayIP());
+  Serial.print("Subnet Mask: ");
+  Serial.println(WiFi.subnetMask());
+  Serial.print("Primary DNS: ");
+  Serial.println(WiFi.dnsIP(0));
+  Serial.print("Secondary DNS: ");
+  Serial.println(WiFi.dnsIP(1));
+
   esp_err_t err = esp_camera_init(&camera_config);
   if (err != ESP_OK) {
     Serial.printf("Camera init failed with error 0x%x", err);
@@ -180,12 +203,16 @@ void setup() {
   Serial.println("HTTP server started");
 }
 
+void flashLED() {
+  Serial.println("Flashing LED");
+  digitalWrite(LED_BUILTIN, HIGH);
+  delay(500);
+  digitalWrite(LED_BUILTIN, LOW);
+}
+
 int i = 0;
 void loop() {
-  i++;
-  if (i % 1000 == 0) {
-    Serial.println("loop" + String(i));
-  }
+
   // put your main code here, to run repeatedly:
   // delay(3000);
   server.handleClient();
@@ -194,5 +221,6 @@ void loop() {
   if (millis() - lastCaptureTime > captureInterval) {
     captureImage();
     lastCaptureTime = millis();
+    flashLED();
   }
 }
